@@ -135,6 +135,7 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
                 html_result = generate_html(data)
                 # Write Metadata md with html content
                 with open(full_path.with_suffix('.md'), 'w') as fout:
+                    typer.echo(f"Convert {full_path} to {full_path.with_suffix('.md')}")
                     fout.write(html_result)
 
 
@@ -200,6 +201,7 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
         html_result = generate_html(model_table)
         # Write Metadata md with html content
         with open(Path('index.md'), 'w') as fout:
+            typer.echo(f"Save {Path('index.md')}")
             fout.write(html_result)
 
 
