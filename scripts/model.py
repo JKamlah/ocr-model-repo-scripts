@@ -8,7 +8,6 @@ import yaml
 
 app = typer.Typer()
 
-
 def convert_yaml_to_json(yaml_file: Path, json_file: Path):
     """
     Converts a single YAML file to a JSON file.
