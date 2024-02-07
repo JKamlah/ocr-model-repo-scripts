@@ -227,7 +227,7 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
         return html_content
 
     for full_path in [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
-        full_path_out = Path('../docs/').joinpath(root[3:]).joinpath(file).with_suffix('.md')
+        full_path_out = Path('../docs/').joinpath(str(full_path)[3:]).with_suffix('.md')
         full_path_out.parent.mkdir(parents=True, exist_ok=True)
         # Parse the JSON data
         with open(full_path, 'r') as fin:
