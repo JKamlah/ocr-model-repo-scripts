@@ -295,10 +295,14 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
     if model_table != '''''':
         # Generate HTML content
         html_result = generate_html(model_table)
-        # Write Metadata md with html content
-        with open(Path('index.md'), 'w') as fout:
-            typer.echo(f"Save {Path('index.md')}")
-            fout.write(html_result)
+    else:
+        html_result = (f"# Page Update Notice\\\n"
+                       "This page does not contain any metadata files. Please add them according to the instructions and push a new version tag.\\\n"
+                       "Stay tuned for updates!\\\n")
+    # Write Metadata md with html content
+    with open(Path('index.md'), 'w') as fout:
+        typer.echo(f"Save {Path('index.md')}")
+        fout.write(html_result)
 
 
 if __name__ == "__main__":
