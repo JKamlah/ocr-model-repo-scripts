@@ -126,7 +126,7 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             topic.text['Models'] += '|'.join([f"[{data['model']['name']}]({str(full_path.parent)[3:]})",
                                               data['software']['name'],
                                               data['model']['type'],
-                                              data['model']['description'],
+                                              data['model']['description'].replace('\n', ' '),
                                               f"<a href=\"{data['model']['defaultmodel']}\" download>Download</a>"])+'\n'
         topic.text['Description'] += f"This model repository {f'contains one model' if len(metadata_files) == 1 else f'contains {len(metadata_files)} models.'}.\n"
         topic.text['Metadata'] += (f"**Model software**: {' , '. join(set(software))}.\\\n"
