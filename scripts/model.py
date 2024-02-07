@@ -109,7 +109,7 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
         'GitHub-Pages']
     topic.text['Acknowledgments'] += (f"You may use and share the models under the terms of [LICENSE](LICENSE.md).\\\n"
                                       f"\\\n"
-                                      f"This repository is based on:\\\n"
+                                      f"This repository is based on:\n"
                                       f"* [OCR-Model-Repo-Template](https://github.com/UB-Mannheim/ocr-model-repo-template)")
 
     # Read information about all models
