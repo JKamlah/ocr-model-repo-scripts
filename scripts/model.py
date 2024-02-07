@@ -166,12 +166,15 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
         """
         model = data["model"]
         training = data["training"]
-        evaluation = data["evaluation"]
-        license_info = f"{model['license']['name']} (see: {model['license']['url']})"
+        evaluation = data.get("evaluation", None)
+        if model.get('license', None):
+            license_info = f"{model.get('license').get('name', '')} (see: {model['license']['url']})"
+        else:
+            license_info = f""
 
         authors = "".join(
             [f"<dd>{author['name']} {author['surname']} ({', '.join(author['roles'])}) (ORCID: {author['orcid']})</dd>"
-             for author in data["authors"]])
+             for author in data.get("authors", [])])
 
         html_content = f'''<link rel="stylesheet" href="{''.join(['../'] * len(full_path.parent.parent.parts))}table_hide.css"/>
 <div>
@@ -195,33 +198,41 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
    <h2>Training</h2>
    <dl class="grid">
       <dt id="Training-type">Type of training:</dt>
-      <dd>{training["info"]["trainingstype"]}</dd>
+      <dd>{training["info"].get("trainingstype","N.A.")}</dd>
       <dt id="Epochs">Epochs:</dt>
-      <dd>{training["info"]["direct"]}</dd>
-   </dl>
+      <dd>{training["info"].get("direct", 0)}</dd>
+   </dl>'''
+        if evaluation:
+            html_content += f'''
    <h2>Evaluation</h2>
    <dl class="grid">
       <dt id="Information">Information:</dt>
-      <dd>{evaluation["input"]}</dd>
+      <dd>{evaluation.get("input","")}</dd>
       <dt id="Metric">Metric:</dt>
-      <dd>{evaluation["metrics"]}</dd>
+      <dd>{evaluation.get("metrics","")}</dd>
       <dt id="Result">Result:</dt>
-      <dd>{evaluation["results"]}</dd>
-   </dl>
+      <dd>{evaluation.get("results","")}/dd>
+   </dl>'''
+        if data.get('project', None):
+            html_content += f'''
    <h2>Project</h2>
    <dl class="grid">
       <dt id="Project">Project:</dt>
-      <dd>{data["project"]["name"]}</dd>
+      <dd>{data["project"].get("name","")}</dd>
       <dt id="Project-URL">Project-URL:</dt>
-      <dd>{data["project"]["homepage"]}</dd>
+      <dd>{data["project"].get("homepage","")}</dd>
       <dt id="Project-URL">Project-URL:</dt>
       {authors}
-   </dl>
+   </dl>'''
+        if data.get('uses', None):
+            html_content += f'''     
    <h2>Usage</h2>
    <dl class="grid">
       <dt id="Usage-General">General:</dt>
       <dd>{data["uses"]["general"]}</dd>
    </dl>
+   '''
+        html_content += f''' 
 </div>
 '''
         return html_content
