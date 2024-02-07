@@ -69,7 +69,8 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             'Description': None,
             'Metadata': None,
             'Models': None,
-            'GitHub-Pages': None
+            'GitHub-Pages': None,
+            'Acknowledgments': None
         })
         text: Dict[str, Optional[bool]] = field(default_factory=lambda: {
             'Delete': '',
@@ -77,7 +78,8 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             'Description': '## 📚 Description\n',
             'Metadata': '## 📜 Metadata\n',
             'Models': '## 📂 Models\n',
-            'GitHub-Pages': '## 🔖 **GitHub** Pages\n'
+            'GitHub-Pages': '## 🔖 **GitHub** Pages\n',
+            'Acknowledgments': '## 👏 Acknowledgments\n'
         })
 
         def update_state(self, line: str):
@@ -105,6 +107,10 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
     topic.text['Title'] = '## '+title if title != '' else topic.text['Title']
     topic.text['GitHub-Pages'] += f"You can also visit our **GitHub** Pages: {gh_url}" if gh_url != '' else topic.text[
         'GitHub-Pages']
+    topic.text['Acknowledgments'] += (f"You may use and share the models under the terms of [LICENSE](LICENSE).\\\n"
+                                      f"\\\\"
+                                      f"This repository is based on:\\"
+                                      f"* [OCR-Model-Repo-Template](https://github.com/UB-Mannheim/ocr-model-repo-template)")
 
     # Read information about all models
     if metadata_files := [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
@@ -296,9 +302,9 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
         # Generate HTML content
         html_result = generate_html(model_table)
     else:
-        html_result = (f"# Page Update Notice\\\n"
+        html_result = (f"# Page Update Notice\n"
                        "This page does not contain any metadata files. Please add them according to the instructions and push a new version tag.\\\n"
-                       "Stay tuned for updates!\\\n")
+                       "Stay tuned for updates!")
     # Write Metadata md with html content
     with open(Path('index.md'), 'w') as fout:
         typer.echo(f"Save {Path('index.md')}")
