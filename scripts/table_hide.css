@@ -73,20 +73,28 @@
              
              width: 1800px !important;
              }
-             
+
              tbody th {
                 position: sticky !important;
                 left: 0;
-    
+                background-color: #c8ab37 !important;
+                border-color: #c8ab37 !important;
+                color: #fff !important;
              }
+
              #table_id td {
                 text-align: right !important;
              }
-             
-             table.dataTable thead th, table.dataTable tfoot th {
+
+             table.dataTable tfoot th {
              font-weight: normal !important;
              }
-             
+
+            thead th {
+                background-color: #c8ab37 !important;
+                border-color: #c8ab37 !important;
+                color: #fff !important;
+             }
 /*            Normal Styles*/
             
             header {
