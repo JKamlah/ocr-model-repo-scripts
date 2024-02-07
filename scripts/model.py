@@ -107,9 +107,9 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
     topic.text['Title'] = '## '+title if title != '' else topic.text['Title']
     topic.text['GitHub-Pages'] += f"You can also visit our **GitHub** Pages: {gh_url}" if gh_url != '' else topic.text[
         'GitHub-Pages']
-    topic.text['Acknowledgments'] += (f"You may use and share the models under the terms of [LICENSE](LICENSE).\\\n"
-                                      f"\\\\"
-                                      f"This repository is based on:\\"
+    topic.text['Acknowledgments'] += (f"You may use and share the models under the terms of [LICENSE](LICENSE.md).\\\n"
+                                      f"\\\n"
+                                      f"This repository is based on:\\\n"
                                       f"* [OCR-Model-Repo-Template](https://github.com/UB-Mannheim/ocr-model-repo-template)")
 
     # Read information about all models
