@@ -189,9 +189,9 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
       <dt id="Format">Format:</dt>
       <dd>{model["fileformat"]}</dd>
       <dt id="Topology">Topology:</dt>
-      <dd>{model["topology"]}</dd>
+      <dd>{model.get("topology",'')}</dd>
       <dt id="Creation">Creation:</dt>
-      <dd>{model["creation-date"]}</dd>
+      <dd>{model.get("creation-date", "")}</dd>
       <dt id="License">License:</dt>
       <dd>{license_info}</dd>
    </dl>
