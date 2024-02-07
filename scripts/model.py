@@ -303,8 +303,9 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
         html_result = generate_html(model_table)
     else:
         html_result = (f"# Page Update Notice\n"
-                       "This page does not contain any metadata files. Please add them according to the instructions and push a new version tag.\\\n"
-                       "Stay tuned for updates!")
+                       f"This page does not contain any metadata files. Please add them according to the instructions and push a new version tag.\\\n"
+                       f'For more information, see: <a href="https://github.com/UB-Mannheim/ocr-model-metadata">Metadata tool</a>\\\n'
+                       f"Stay tuned for updates!")
     # Write Metadata md with html content
     with open(Path('index.md'), 'w') as fout:
         typer.echo(f"Save {Path('index.md')}")
