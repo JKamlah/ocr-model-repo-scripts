@@ -107,7 +107,7 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
         'GitHub-Pages']
 
     # Read information about all models
-    if metadata_files := [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
+    if metadata_files := list(directory.rglob('*metadata.json'))+list(directory.rglob('*METADATA.json')):
         topic.text['Models'] += '|'.join(['Model', 'OCR-Engine', 'Type of model', 'Description', 'Default model'])+'\n'
         topic.text['Models'] += '|'.join(['---']*5)+'\n'
         software, model_types = [], []
@@ -220,19 +220,22 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
 '''
         return html_content
 
-    for full_path in [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
-        full_path_out = Path('../docs/').joinpath(root[3:]).joinpath(file).with_suffix('.md')
-        full_path_out.parent.mkdir(parents=True, exist_ok=True)
-        # Parse the JSON data
-        with open(full_path, 'r') as fin:
-            data = json.load(fin)
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.lower().startswith('metadata') and (file.endswith('.json') or file.endswith('.json')):
+                full_path = Path(root) / file
+                full_path_out = Path('../docs/').joinpath(root[3:]).joinpath(file).with_suffix('.md')
+                full_path_out.parent.mkdir(parents=True, exist_ok=True)
+                # Parse the JSON data
+                with open(full_path, 'r') as fin:
+                    data = json.load(fin)
 
-        # Generate HTML content
-        html_result = generate_html(data, full_path)
-        # Write Metadata md with html content
-        with open(full_path_out, 'w') as fout:
-            typer.echo(f"Convert {full_path} to {full_path_out}")
-            fout.write(html_result)
+                # Generate HTML content
+                html_result = generate_html(data, full_path)
+                # Write Metadata md with html content
+                with open(full_path_out, 'w') as fout:
+                    typer.echo(f"Convert {full_path} to {full_path_out}")
+                    fout.write(html_result)
 
 
 @app.command(name="index")
@@ -275,16 +278,19 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
         return html_content
 
     model_table = ''''''
-    for full_path in [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
-        # Parse the JSON data
-        with (open(full_path, 'r') as fin):
-            data = json.load(fin)
-            data['model']['defaultmodel'] = data['model']['defaultmodel'].replace('/blob/',
-                                                                                  '/raw/') if 'github.com' in \
-                                                                                              data['model'][
-                                                                                                  'defaultmodel'] else \
-                data['model']['defaultmodel']
-            model_table += f'''         <tr>
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.lower().startswith('metadata') and (file.endswith('.json') or file.endswith('.json')):
+                full_path = Path(root) / file
+                # Parse the JSON data
+                with (open(full_path, 'r') as fin):
+                    data = json.load(fin)
+                    data['model']['defaultmodel'] = data['model']['defaultmodel'].replace('/blob/',
+                                                                                          '/raw/') if 'github.com' in \
+                                                                                                      data['model'][
+                                                                                                          'defaultmodel'] else \
+                        data['model']['defaultmodel']
+                    model_table += f'''         <tr>
              
            <th><a href="{str(full_path.with_suffix(''))[3:]}" title="{data['model']['name']}">{data['model']['name']}</a></th>
            <td>{data["software"]["name"]}</td>
