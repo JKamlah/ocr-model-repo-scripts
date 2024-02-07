@@ -128,9 +128,9 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
                                               data['model']['type'],
                                               data['model']['description'].replace('\n', ' '),
                                               f"<a href=\"{data['model']['defaultmodel']}\" download>Download</a>"])+'\n'
-        topic.text['Description'] += f"This model repository {f'contains one model' if len(metadata_files) == 1 else f'contains {len(metadata_files)} models.'}.\n"
-        topic.text['Metadata'] += (f"**Model software**: {' , '. join(set(software))}.\\\n"
-                                   f"**Model types**: {' , '. join(set(model_types))}.\n")
+        topic.text['Description'] += f"This model repository {f'contains **one** model' if len(metadata_files) == 1 else f'contains **{len(metadata_files)}** models'}.\n"
+        topic.text['Metadata'] += (f"**Model software**: {', '. join(set(software))}.\\\n"
+                                   f"**Model types**: {', '. join(set(model_types))}.\n")
     with open(readme_fpath, 'r') as file:
         for line in file:
             if topic.update_state(line) or any(topic.state.values()):
