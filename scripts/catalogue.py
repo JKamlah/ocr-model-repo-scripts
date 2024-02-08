@@ -69,7 +69,8 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             'Description': None,
             'Metadata': None,
             'Models': None,
-            'GitHub-Pages': None
+            'GitHub-Pages': None,
+            'Acknowledgments': None
         })
         text: Dict[str, Optional[bool]] = field(default_factory=lambda: {
             'Delete': '',
@@ -77,7 +78,8 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             'Description': '## 📚 Description\n',
             'Metadata': '## 📜 Metadata\n',
             'Models': '## 📂 Models\n',
-            'GitHub-Pages': '## 🔖 **GitHub** Pages\n'
+            'GitHub-Pages': '## 🔖 **GitHub** Pages\n',
+            'Acknowledgments': '## 👏 Acknowledgments\n'
         })
 
         def update_state(self, line: str):
@@ -105,9 +107,13 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
     topic.text['Title'] = '## '+title if title != '' else topic.text['Title']
     topic.text['GitHub-Pages'] += f"You can also visit our **GitHub** Pages: {gh_url}" if gh_url != '' else topic.text[
         'GitHub-Pages']
+    topic.text['Acknowledgments'] += (f"You may use and share the models under the terms of [LICENSE](LICENSE.md).\\\n"
+                                      f"\\\n"
+                                      f"This repository is based on:\n"
+                                      f"* [OCR-Model-Repo-Template](https://github.com/UB-Mannheim/ocr-model-repo-template)")
 
     # Read information about all models
-    if metadata_files := list(directory.rglob('*metadata.json'))+list(directory.rglob('*METADATA.json')):
+    if metadata_files := [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
         topic.text['Models'] += '|'.join(['Model', 'OCR-Engine', 'Type of model', 'Description', 'Default model'])+'\n'
         topic.text['Models'] += '|'.join(['---']*5)+'\n'
         software, model_types = [], []
@@ -120,11 +126,11 @@ def readme(directory: Path = typer.Argument(..., exists=True, file_okay=False, d
             topic.text['Models'] += '|'.join([f"[{data['model']['name']}]({str(full_path.parent)[3:]})",
                                               data['software']['name'],
                                               data['model']['type'],
-                                              data['model']['description'],
+                                              data['model']['description'].replace('\n', ' '),
                                               f"<a href=\"{data['model']['defaultmodel']}\" download>Download</a>"])+'\n'
-        topic.text['Description'] += f"This model repository {f'contains one model' if len(metadata_files) == 1 else f'contains {len(metadata_files)} models.'}.\n"
-        topic.text['Metadata'] += (f"**Model software**: {' , '. join(set(software))}.\\\n"
-                                   f"**Model types**: {' , '. join(set(model_types))}.\n")
+        topic.text['Description'] += f"This model repository {f'contains **one** model' if len(metadata_files) == 1 else f'contains **{len(metadata_files)}** models'}.\n"
+        topic.text['Metadata'] += (f"**Model software**: {', '. join(set(software))}.\\\n"
+                                   f"**Model types**: {', '. join(set(model_types))}.\n")
     with open(readme_fpath, 'r') as file:
         for line in file:
             if topic.update_state(line) or any(topic.state.values()):
@@ -160,12 +166,15 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
         """
         model = data["model"]
         training = data["training"]
-        evaluation = data["evaluation"]
-        license_info = f"{model['license']['name']} (see: {model['license']['url']})"
+        evaluation = data.get("evaluation", None)
+        if model.get('license', None):
+            license_info = f"{model.get('license').get('name', '')} (see: {model['license']['url']})"
+        else:
+            license_info = f""
 
         authors = "".join(
             [f"<dd>{author['name']} {author['surname']} ({', '.join(author['roles'])}) (ORCID: {author['orcid']})</dd>"
-             for author in data["authors"]])
+             for author in data.get("authors", [])])
 
         html_content = f'''<link rel="stylesheet" href="{''.join(['../'] * len(full_path.parent.parent.parts))}table_hide.css"/>
 <div>
@@ -180,62 +189,67 @@ def metadata(directory: Path = typer.Argument(..., exists=True, file_okay=False,
       <dt id="Format">Format:</dt>
       <dd>{model["fileformat"]}</dd>
       <dt id="Topology">Topology:</dt>
-      <dd>{model["topology"]}</dd>
+      <dd>{model.get("topology",'')}</dd>
       <dt id="Creation">Creation:</dt>
-      <dd>{model["creation-date"]}</dd>
+      <dd>{model.get("creation-date", "")}</dd>
       <dt id="License">License:</dt>
       <dd>{license_info}</dd>
    </dl>
    <h2>Training</h2>
    <dl class="grid">
       <dt id="Training-type">Type of training:</dt>
-      <dd>{training["info"]["trainingstype"]}</dd>
+      <dd>{training["info"].get("trainingstype","N.A.")}</dd>
       <dt id="Epochs">Epochs:</dt>
-      <dd>{training["info"]["direct"]}</dd>
-   </dl>
+      <dd>{training["info"].get("direct", 0)}</dd>
+   </dl>'''
+        if evaluation:
+            html_content += f'''
    <h2>Evaluation</h2>
    <dl class="grid">
       <dt id="Information">Information:</dt>
-      <dd>{evaluation["input"]}</dd>
+      <dd>{evaluation.get("input","")}</dd>
       <dt id="Metric">Metric:</dt>
-      <dd>{evaluation["metrics"]}</dd>
+      <dd>{evaluation.get("metrics","")}</dd>
       <dt id="Result">Result:</dt>
-      <dd>{evaluation["results"]}</dd>
-   </dl>
+      <dd>{evaluation.get("results","")}/dd>
+   </dl>'''
+        if data.get('project', None):
+            html_content += f'''
    <h2>Project</h2>
    <dl class="grid">
       <dt id="Project">Project:</dt>
-      <dd>{data["project"]["name"]}</dd>
+      <dd>{data["project"].get("name","")}</dd>
       <dt id="Project-URL">Project-URL:</dt>
-      <dd>{data["project"]["homepage"]}</dd>
+      <dd>{data["project"].get("homepage","")}</dd>
       <dt id="Project-URL">Project-URL:</dt>
       {authors}
-   </dl>
+   </dl>'''
+        if data.get('uses', None):
+            html_content += f'''     
    <h2>Usage</h2>
    <dl class="grid">
       <dt id="Usage-General">General:</dt>
       <dd>{data["uses"]["general"]}</dd>
    </dl>
+   '''
+        html_content += f''' 
 </div>
 '''
         return html_content
 
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.lower().startswith('metadata') and (file.endswith('.json') or file.endswith('.json')):
-                full_path = Path(root) / file
-                full_path_out = Path('../docs/').joinpath(root[3:]).joinpath(file).with_suffix('.md')
-                full_path_out.parent.mkdir(parents=True, exist_ok=True)
-                # Parse the JSON data
-                with open(full_path, 'r') as fin:
-                    data = json.load(fin)
+    for full_path in [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
+        full_path_out = Path('../docs/').joinpath(str(full_path)[3:]).with_suffix('.md')
+        full_path_out.parent.mkdir(parents=True, exist_ok=True)
+        # Parse the JSON data
+        with open(full_path, 'r') as fin:
+            data = json.load(fin)
 
-                # Generate HTML content
-                html_result = generate_html(data, full_path)
-                # Write Metadata md with html content
-                with open(full_path_out, 'w') as fout:
-                    typer.echo(f"Convert {full_path} to {full_path_out}")
-                    fout.write(html_result)
+        # Generate HTML content
+        html_result = generate_html(data, full_path)
+        # Write Metadata md with html content
+        with open(full_path_out, 'w') as fout:
+            typer.echo(f"Convert {full_path} to {full_path_out}")
+            fout.write(html_result)
 
 
 @app.command(name="index")
@@ -278,19 +292,16 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
         return html_content
 
     model_table = ''''''
-    for root, dirs, files in os.walk(directory):
-        for file in files:
-            if file.lower().startswith('metadata') and (file.endswith('.json') or file.endswith('.json')):
-                full_path = Path(root) / file
-                # Parse the JSON data
-                with (open(full_path, 'r') as fin):
-                    data = json.load(fin)
-                    data['model']['defaultmodel'] = data['model']['defaultmodel'].replace('/blob/',
-                                                                                          '/raw/') if 'github.com' in \
-                                                                                                      data['model'][
-                                                                                                          'defaultmodel'] else \
-                        data['model']['defaultmodel']
-                    model_table += f'''         <tr>
+    for full_path in [fpath for fpath in directory.rglob('*') if fpath.name.lower().startswith('metadata.json')]:
+        # Parse the JSON data
+        with (open(full_path, 'r') as fin):
+            data = json.load(fin)
+            data['model']['defaultmodel'] = data['model']['defaultmodel'].replace('/blob/',
+                                                                                  '/raw/') if 'github.com' in \
+                                                                                              data['model'][
+                                                                                                  'defaultmodel'] else \
+                data['model']['defaultmodel']
+            model_table += f'''         <tr>
              
            <th><a href="{str(full_path.with_suffix(''))[3:]}" title="{data['model']['name']}">{data['model']['name']}</a></th>
            <td>{data["software"]["name"]}</td>
@@ -301,10 +312,15 @@ def index(directory: Path = typer.Argument(..., exists=True, file_okay=False, di
     if model_table != '''''':
         # Generate HTML content
         html_result = generate_html(model_table)
-        # Write Metadata md with html content
-        with open(Path('index.md'), 'w') as fout:
-            typer.echo(f"Save {Path('index.md')}")
-            fout.write(html_result)
+    else:
+        html_result = (f"# Page Update Notice\n"
+                       f"This page does not contain any metadata files. Please add them according to the instructions and push a new version tag.\\\n"
+                       f'For more information, see: <a href="https://github.com/UB-Mannheim/ocr-model-metadata">Metadata tool</a>\\\n'
+                       f"Stay tuned for updates!")
+    # Write Metadata md with html content
+    with open(Path('index.md'), 'w') as fout:
+        typer.echo(f"Save {Path('index.md')}")
+        fout.write(html_result)
 
 
 if __name__ == "__main__":
